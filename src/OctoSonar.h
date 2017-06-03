@@ -40,6 +40,7 @@ class OctoSonar
 #endif
     void doSonar();                                   // call every loop()
     int16_t read(uint8_t sonar);
+    int16_t OctoSonar::read(uint8_t sonar, int16_t outOfRange);
     static uint8_t maxOOR;                                   // how many OOR to skip. Raise this in noisy environments
     // library-accessible "private" interface
   private:

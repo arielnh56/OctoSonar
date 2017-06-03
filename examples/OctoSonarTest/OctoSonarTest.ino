@@ -33,13 +33,13 @@ void loop() {
   */
   if (last_print + 500 < millis()) {
     last_print = millis();
-    sprintf(buffer, "4 %5d      %5d 3 ", myOcto.read(4), myOcto.read(3));
+    sprintf(buffer, "0 %5d      %5d 7 ", myOcto.read(0), myOcto.read(7));
     lcd.setCursor(0, 0); lcd.print(buffer);
-    sprintf(buffer, "5 %5d      %5d 2", myOcto.read(5), myOcto.read(2));
+    sprintf(buffer, "1 %5d      %5d 6", myOcto.read(1), myOcto.read(6));
     lcd.setCursor(0, 1); lcd.print(buffer);
-    sprintf(buffer, "6 %5d      %5d 1", myOcto.read(6), myOcto.read(1));
+    sprintf(buffer, "2 %5d      %5d 5", myOcto.read(2), myOcto.read(5));
     lcd.setCursor(0, 2); lcd.print(buffer);
-    sprintf(buffer, "7 %5d      %5d 0", myOcto.read(7), myOcto.read(0));
+    sprintf(buffer, "3 %5d      %5d 4", myOcto.read(3), myOcto.read(4));
     lcd.setCursor(0, 3); lcd.print(buffer);
   }
 }

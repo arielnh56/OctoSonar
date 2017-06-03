@@ -118,6 +118,14 @@ int16_t OctoSonar::read(uint8_t sonar) {
   return _micros[sonar];
 }
 
+int16_t OctoSonar::read(uint8_t sonar, int16_t outOfRange) {
+  if (_micros[sonar] == 0 ) {
+    return outOfRange;
+  } else {
+    return _micros[sonar];
+  }
+}
+
 // declare private static class variables
 uint8_t OctoSonar::_currentSonar = 0;
 uint32_t OctoSonar::_last_sonar_millis = 0;
