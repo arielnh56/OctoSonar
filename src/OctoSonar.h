@@ -30,7 +30,7 @@ class OctoSonar
     OctoSonar(uint8_t address); // constructor
     void begin();
     void begin(uint8_t interrupt);
-    static double units;              // multiplier for unit calculation
+
 #ifdef OCTOSONAR_DODEC
     static uint16_t active;                    // mask of active sensors 
     void begin(uint8_t interrupt, uint16_t active);
@@ -39,9 +39,10 @@ class OctoSonar
     void begin(uint8_t interrupt, uint8_t active);
 #endif
     void doSonar();                                   // call every loop()
-    int16_t read(uint8_t sonar);
-    int16_t OctoSonar::read(uint8_t sonar, int16_t outOfRange);
+    int16_t read(uint8_t sonar);                     
+    int16_t read(uint8_t sonar, int16_t outOfRange);
     static uint8_t maxOOR;                                   // how many OOR to skip. Raise this in noisy environments
+    static double units;                        // defaults to OCTOSONAR_MM 
     // library-accessible "private" interface
   private:
     uint8_t  _address;                   // PCF8574 0x20 - 0x27 or PCF8574A 0x38 - 0x3F
