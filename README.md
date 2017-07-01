@@ -1,7 +1,8 @@
 # OctoSonar library for Arduino
-Version: 0.0.0<br>
-Release date: unreleased<br>
-LINKS HERE
+Version: 1.0.0<br>
+Release date: 6/30/2017<br>
+https://hackaday.io/project/19950-hc-sr04-i2c-octopus-octosonar
+https://www.tindie.com/stores/arielnh56/
 
 ## Summary
 
@@ -41,8 +42,8 @@ by connecting the 5V and VCC pins together via the V1 solder jumper.
 As manufactured the board has an I2C address of 0x38. This can be altered via solder jumpers on the back.
 
 The I2C bus **requires** pullup resistors on the SDA and SCL lines to VCC. While Arduinos will enable the
-internal pullups, these are too large at 20k\omega - 50k\omega for reliable operation of I2C. The generally recommended 
-value to use is 4.7k\omega. Positions are provided on the board at R1 and R2 to add these pullup resistors. On my 
+internal pullups, these are too large at 20k - 50k for reliable operation of I2C. The generally recommended 
+value to use is 4.7k. Positions are provided on the board at R1 and R2 to add these pullup resistors. On my 
 projects I usually have several devices on the bus and place the pullups near the controller. For more information on
 use of the I2C bus there is an [excellent Sparkfun tutorial.](https://learn.sparkfun.com/tutorials/i2c)
 
@@ -129,7 +130,7 @@ The code is written to support multiple OctoSonar units on the same or different
 through all the active sensors on one board, then move on to the next board, in a loop. It will not poll 
 multiple boards in
 parallel. At the time of writing (6/30/2017) I haven't actually tested this multi-board capability. It uses 
-similar logic to that used in the earlier SonarI2C library, except the it is the boards that are in a 
+similar logic to that used in the earlier SonarI2C library, except that it is the boards that are in a 
 looped-linked-list not the sensors.
  
 ## Relationship to SonarI2C
