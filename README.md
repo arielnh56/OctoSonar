@@ -1,5 +1,5 @@
 # OctoSonar library for Arduino
-Version: 1.0.0<br>
+Version: 1.0.1<br>
 Release date: 6/30/2017<br>
 https://hackaday.io/project/19950-hc-sr04-i2c-octopus-octosonar
 https://www.tindie.com/stores/arielnh56/
@@ -147,5 +147,6 @@ matching tri-state buffer to forward the echo signal
 
 ## Version history
 
+* 1.0.1 (7/1/2017): Included correct OctoSonarTest example
 * 1.0.0 (06/30/2017): Initial release
 
