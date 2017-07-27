@@ -7,40 +7,49 @@
 #include <Wire.h>
 
 // constructor
-OctoSonar::OctoSonar() 
-#ifdef OCTOSONARX2
-  : active(0x7777) // default to 12 for dodec
-#else
-  : active(0xff) // default to 8 for octo2
-#endif
-  , _address(0x38)        // PCF8574A and PCF8575
+OctoSonar_base::OctoSonar_base(uint8_t numsonars) 
+  : active(0xff) // default to 8 
+  , _address(0x38)        // PCF8574A OctoSonar v2
   , _interrupt(OCTOSONAR_INT_PIN)
-  , _range{}            // last good range
-  , _OORcount{}         // last good response time in microseconds - 16 bit gives us up to 65ms
-{}
+  , _numsonars(8)  // PCF8574(A)
+{
+  _numsonars = numsonars;
+  _range = new uint16_t[_numsonars]();
+  _OORcount = new uint16_t[_numsonars]();
+}
 
-OctoSonar::OctoSonar(uint8_t address, uint8_t interrupt) {
-  _address = constrain(address, 0x38, 0x3F);
+OctoSonar_base::OctoSonar_base(uint8_t numsonars, uint8_t address, uint8_t interrupt) {
+  _numsonars = numsonars;
+  if (numsonars == 8) {
+    _address = constrain(address, 0x38, 0x3F);
+  } else {
+    _address = constrain(address, 0x20, 0x27);
+  }
   _interrupt = interrupt;
+  _range = new uint16_t[_numsonars]();
+  _OORcount = new uint16_t[_numsonars]();
 }
 
 // static class variables
-uint8_t  OctoSonar::maxOOR = 1;                         // how many OOR to skip. Raise this in noisy environments
-double   OctoSonar::units = OCTOSONAR_MM;               // defaults to OCTOSONAR_MM 
-uint16_t OctoSonar::_max_micros = 4000 / 0.170145;      // limit in microseconds. Above this return zero.
-uint8_t  OctoSonar::_phase = OCTOSONAR_PHASE_IDLE;      // what we did last
-uint32_t OctoSonar::_pulseBegin = 0;                    // to remember when the pulse started
-uint16_t OctoSonar::_spacing = OCTOSONAR_SPACING;       // time between pings - default 50ms
-uint32_t OctoSonar::_last_sonar_millis = 0;             // timestamp of last ping sent
-uint8_t  OctoSonar::_currentSonar = 0;                  // current active sonar - array index
-OctoSonar  *OctoSonar::_currentOctoSonar = 0;           // current active OctoSonar
+uint8_t  OctoSonar_base::maxOOR = 1;                         // how many OOR to skip. Raise this in noisy environments
+double   OctoSonar_base::units = OCTOSONAR_MM;               // defaults to OCTOSONAR_MM 
+uint16_t OctoSonar_base::_max_micros = 4000 / 0.170145;      // limit in microseconds. Above this return zero.
+uint8_t  OctoSonar_base::_phase = OCTOSONAR_PHASE_IDLE;      // what we did last
+uint32_t OctoSonar_base::_pulseBegin = 0;                    // to remember when the pulse started
+uint16_t OctoSonar_base::_spacing = OCTOSONAR_SPACING;       // time between pings - default 50ms
+uint32_t OctoSonar_base::_last_sonar_millis = 0;             // timestamp of last ping sent
+uint8_t  OctoSonar_base::_currentSonar = 0;                  // current active sonar - array index
+OctoSonar_base  *OctoSonar_base::_currentOctoSonar = 0;           // current active OctoSonar
 
 
-void OctoSonar::begin() {
+void OctoSonar_base::begin() {
   Wire.begin();
   pinMode(_interrupt, INPUT);
   Wire.beginTransmission(_address);
   Wire.write(0xff); // clear the expander
+  if (_numsonars == 16) {
+    Wire.write(0xff);
+  }
   Wire.endTransmission();
 
   // insert into circular linked list
@@ -54,18 +63,14 @@ void OctoSonar::begin() {
   }
 }
 
-#ifdef OCTOSONARX2
-void OctoSonar::begin(uint16_t newactive) {
-#else
-void OctoSonar::begin(uint8_t newactive) {
-#endif
+void OctoSonar_base::begin(uint16_t newactive) {
   active = newactive;
   begin();
 }
 
 // call from loop() every cycle
-void OctoSonar::doSonar() {
-  OctoSonar *startOcto = _currentOctoSonar;     // loop catcher for no octos enabled
+void OctoSonar_base::doSonar() {
+  OctoSonar_base *startOcto = _currentOctoSonar;     // loop catcher for no octos enabled
   uint8_t startSonar =  _currentSonar;          // ditto  
   if (_last_sonar_millis + _spacing < millis()) {  // time to move forward
     if (_phase != OCTOSONAR_PHASE_IDLE) {
@@ -78,16 +83,15 @@ void OctoSonar::doSonar() {
     } 
     // high all triggers
     Wire.beginTransmission(_currentOctoSonar->_address);
-#ifdef OCTOSONARX2
-    Wire.write(0xffff,2);
-#else
     Wire.write(0xff);
-#endif
+    if (_currentOctoSonar->_numsonars == 16) {
+      Wire.write(0xff);
+    }
     Wire.endTransmission();
     // look for next enabled sonar
     do {
       _currentSonar++;
-      if (_currentSonar >= OCTOSONAR_PORTS ) { // roll to next board
+      if (_currentSonar >= _currentOctoSonar->_numsonars ) { // roll to next board
         _currentOctoSonar = _currentOctoSonar->_nextOctoSonar;
 	_currentSonar = 0;
       }
@@ -97,11 +101,13 @@ void OctoSonar::doSonar() {
     _last_sonar_millis = millis();
     // drop the trigger we want
     Wire.beginTransmission(_currentOctoSonar->_address);
-#ifdef OCTOSONARX2
-    Wire.write(~((uint16_t)1 << _currentSonar),2);
-#else
-    Wire.write(~((uint8_t)1 << _currentSonar));
-#endif
+    if (_currentOctoSonar->_numsonars == 16) {
+      uint16_t trig;
+      trig = ~((uint16_t)1 << _currentSonar);
+      Wire.write((uint8_t *)&trig,2);
+    } else {
+      Wire.write(~((uint8_t)1 << _currentSonar));
+    }
     Wire.endTransmission();
 
     // check the pin state - it should be down right now, echo takes a while to start 
@@ -114,13 +120,13 @@ void OctoSonar::doSonar() {
   }
 }
 
-void OctoSonar::_startPulse() {
+void OctoSonar_base::_startPulse() {
   _pulseBegin = micros(); // pulse is starting now
   attachInterrupt(digitalPinToInterrupt(_currentOctoSonar->_interrupt), _endPulse, FALLING); // now look for pulse end
   _phase = OCTOSONAR_PHASE_ECHO_END;
 }
 
-void OctoSonar::_endPulse() {
+void OctoSonar_base::_endPulse() {
   uint32_t now = micros();
   detachInterrupt(digitalPinToInterrupt(_currentOctoSonar->_interrupt)); // clean up after ourselves
   // ignore wacko values
@@ -138,11 +144,11 @@ void OctoSonar::_endPulse() {
 }
 
 // public member functions
-int16_t OctoSonar::read(uint8_t sonar) {
+int16_t OctoSonar_base::read(uint8_t sonar) {
   return _range[sonar];
 }
 
-int16_t OctoSonar::read(uint8_t sonar, int16_t outOfRange) {
+int16_t OctoSonar_base::read(uint8_t sonar, int16_t outOfRange) {
   if (_range[sonar] == 0 ) {
     return outOfRange;
   } else {

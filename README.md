@@ -1,15 +1,15 @@
 # OctoSonar library for Arduino
-Version: 1.0.1<br>
-Release date: 6/30/2017<br>
+Version: 1.1.0<br>
+Release date: 7/26/2017<br>
 https://hackaday.io/project/19950-hc-sr04-i2c-octopus-octosonar
 https://www.tindie.com/stores/arielnh56/
 
 ## Summary
 
 This is a library for the Arduino IDE that allows the polling of multiple ultrasonic distance sensors using the I2C 
-bus and a single hardware interrupt pin. It assumes a PCF8574(A) type port expander to trigger the sensors, and 
+bus and a single hardware interrupt pin. It assumes a PCF8574(A) or PCF8575 type port expander to trigger the sensors, and 
 tri-state buffers to multiplex the echo signals. It is specifically developed and maintained to support the author's 
-OctoSonar boards version 2.0+. For earlier boards see the SonarI2C library.
+OctoSonar boards version 2.0+ and OctoSonarX2. For earlier boards see the SonarI2C library.
 
 It has been developed for use with the HC-SR04 sensor - and has been tested with units from multiple manufacturers.
 
@@ -22,7 +22,7 @@ activity may interfere with the accuracy and reliability of this code.
 
 ### Hardware
 
-This code supports the OctoSonar v2.0 and later. Schematics and board designs are included in this repo.
+This code supports the OctoSonar v2.0 and later and OctoSonarX2. Schematics and board designs are included in this repo.
 
 Boards and sensors can be purchased at [on Tindie.](https://www.tindie.com/stores/arielnh56/)
 
@@ -72,12 +72,14 @@ An example is included showing the use of the OctoSonar with 8 sensors. It will 
 
 ## Library reference
 
-* Constructor. Call once outside loop() and setup(). This sets the I2C address of the pin expander (0x38 - 0x3F).
+* Constructor. Call once outside loop() and setup(). This sets the I2C address of the pin expander (0x38 - 0x3F for OctoSonar, 0x20 - 0x27 for OctoSonarX2).
 e.g.  OctoSonar() myOcto;
 
  ```c
     OctoSonar(); // defaults constructor 0x38, 2
     OctoSonar(uint8_t address, uint8_t interrupt); // constructor
+    OctoSonarX2(); // defaults constructor 0x20, 2
+    OctoSonarX2(uint8_t address, uint8_t interrupt); // constructor
  
 ```
 
@@ -86,14 +88,14 @@ e.g. myOcto.begin();
 
  ```c
     void begin();
-    void begin(uint8_t active);
+    void begin(uint16_t active);
 ```
 
-*  Disabling sensors that you are not interested in right now allows the other sensors to poll more often. This is a bitmask mapping to the 8 sensors on the unit. A '1' is 'active'. 
-e.g. myOcto.active = 0x03;   // S0 and S1 only
+*  Disabling sensors that you are not interested in right now allows the other sensors to poll more often. This is a bitmask mapping to the 16 sensors on the unit. A '1' is 'active'. 
+e.g. myOcto.active = 0x0003;   // S0 and S1 only
 
  ```c
-    uint8_t active;                    // mask of active sensors 
+    uint16_t active;                    // mask of active sensors 
 ```
 
 * by default we skip one out of range/failed echo, keeping the last value. It may be useful to raise this count in sub-optimal echo environments. This is a global setting.
@@ -146,7 +148,7 @@ matching tri-state buffer to forward the echo signal
 * No daisy-chaining. That was silly.
 
 ## Version history
-
+* 1.1.0 (7/26/2017): OctoSonarX2 support working - moved to derived classes
 * 1.0.1 (7/1/2017): Included correct OctoSonarTest example
 * 1.0.0 (06/30/2017): Initial release
 

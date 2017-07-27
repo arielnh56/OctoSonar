@@ -14,7 +14,7 @@
 
 #define OCTOSONAR_INT_PIN		2	// default interrupt pin
 #define OCTOSONAR_SPACING		50	// millis to avoid echo
-//#define OCTOSONARX2			// future verion with PCF8575
+#define OCTOSONARX2			// future verion with PCF8575
 #ifdef OCTOSONARX2
 #define OCTOSONAR_PORTS                 16      // ports per PCF8575
 #else
@@ -28,21 +28,16 @@
 #define OCTOSONAR_IN			0.00669862
 #define OCTOSONAR_US			1
 
-class OctoSonar
+class OctoSonar_base
 {
   // user-accessible "public" interface
   public:
     // instance stuff
-    OctoSonar(); // defaults constructor 0x38, 2
-    OctoSonar(uint8_t address, uint8_t interrupt); // constructor
+    OctoSonar_base(uint8_t numsonars); // defaults constructor 8, 0x38, 2
+    OctoSonar_base(uint8_t numsonars, uint8_t address, uint8_t interrupt); // constructor
     void begin();
-#ifdef OCTOSONARX2
     uint16_t active;                    // mask of active sensors 
     void begin(uint16_t active);
-#else
-    uint8_t active;                    // mask of active sensors 
-    void begin(uint8_t active);
-#endif
     int16_t read(uint8_t sonar);                     
     int16_t read(uint8_t sonar, int16_t outOfRange);
     // class stuff
@@ -54,13 +49,9 @@ class OctoSonar
     // instance stuff
     uint8_t  _address;                   // PCF8574 0x20 - 0x27 or PCF8574A 0x38 - 0x3F
     uint8_t  _interrupt;          // interrupt pin - default 2
-#ifdef OCTOSONARX2
-    uint16_t _range[16];           // last good response time in microseconds - 16 bit gives us up to 65ms
-    uint8_t  _OORcount[16];         // last good response time in microseconds - 16 bit gives us up to 65ms
-#else
-    uint16_t _range[8];           // last good response time in microseconds - 16 bit gives us up to 65ms
-    uint8_t  _OORcount[8];         // last good response time in microseconds - 16 bit gives us up to 65ms
-#endif
+    uint16_t *_range;           // last good response time in microseconds - 16 bit gives us up to 65ms
+    uint16_t  *_OORcount;         // last good response time in microseconds - 16 bit gives us up to 65ms
+    uint8_t _numsonars;            // 8 = PCF8574 or PCF8574A (1 byte comms), 16 = PCF8575 (2 byte comms)
     // class stuff
     static uint16_t _max_micros;         // limit in microseconds. Above this return zero.
     static uint8_t _phase;               // what we did last
@@ -71,9 +62,23 @@ class OctoSonar
     static void     _send_ping();        // trigger the sensor and set the interrupt
     static void     _startPulse();       // interrupt callout when a pulse starts
     static void     _endPulse();         // interrupt callout when a pulse ends
-    static OctoSonar *_currentOctoSonar; // pointer to the active OctoSonar
-    OctoSonar *_nextOctoSonar;           // link to the next OctoSonar in the list
+    static OctoSonar_base *_currentOctoSonar; // pointer to the active OctoSonar
+    OctoSonar_base *_nextOctoSonar;           // link to the next OctoSonar in the list
 };
+
+class OctoSonar :
+	public OctoSonar_base::OctoSonar_base {
+		public:
+			OctoSonar() : OctoSonar_base(8) {}
+			OctoSonar(uint8_t address, uint8_t interrupt): OctoSonar_base(8, address, interrupt) {}
+	};
+
+class OctoSonarX2 :
+	public OctoSonar_base::OctoSonar_base {
+		public:
+			OctoSonarX2() : OctoSonar_base(16, 0x20, 2) {}
+			OctoSonarX2(uint8_t address, uint8_t interrupt): OctoSonar_base(16, address, interrupt) {}
+	};
 
 #endif
 
