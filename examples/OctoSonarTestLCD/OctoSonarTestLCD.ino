@@ -1,4 +1,4 @@
-/* OctoSonarTest
+/* OctoSonarTestLCD
  *  
  *  This is a basic test for the OctoSonar V2+ functionality
  *  outputs range in mm to all 8 sensorts on 1602 or 2004 LCD and optional 

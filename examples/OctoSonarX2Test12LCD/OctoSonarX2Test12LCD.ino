@@ -1,4 +1,4 @@
-/* OctoSonarX2Test12
+/* OctoSonarX2Test12LCD
  *  
  *  This is a basic test for the OctoSonarX2 functionality
  *  outputs range in mm of 12 sensors on trimounts 1602 to 2004 and 0802 LCD and optional 

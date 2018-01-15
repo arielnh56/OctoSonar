@@ -1,6 +1,6 @@
 # OctoSonar library for Arduino
-Version: 1.1.0<br>
-Release date: 7/26/2017<br>
+Version: 1.2.0<br>
+Release date: 1/14/2018<br>
 https://hackaday.io/project/19950-hc-sr04-i2c-octopus-octosonar
 https://www.tindie.com/stores/arielnh56/
 
@@ -68,7 +68,14 @@ If this does not work, you can manually install the library:
 
 ## Examples
 
-An example is included showing the use of the OctoSonar with 8 sensors. It will display the 8 measurement on LCD and the serial monitor. It supports 1602 and 2004 LCDs.
+Examples are included to show basic functionality and use:
+
+* OctoSonarTest - exercises the OctoSonar board and sends serial output at 115200 baud
+* OctoSonarTestLCD - exercises the OctoSonar board and display output to LCD
+* OctoSonarX2Test - exercises the OctoSonarX2 board and sends serial output at 115200 baud
+* OctoSonarX2Test12LCD - exercises the OctoSonarX2 board and displays output on a two LCDs. Assumes 12 sensors mounted on my trimount brackets, with the diagonal sensor output displayed on the secondary LCD
+
+The "bench" examples drive the test jigs used during quality control. Do no use these examples, they will not work for you.
 
 ## Library reference
 
@@ -148,6 +155,7 @@ matching tri-state buffer to forward the echo signal
 * No daisy-chaining. That was silly.
 
 ## Version history
+* 1.2.0 (1/14/2018): Updated eagle files. Updated examples. No changes to library code.
 * 1.1.0 (7/26/2017): OctoSonarX2 support working - moved to derived classes
 * 1.0.1 (7/1/2017): Included correct OctoSonarTest example
 * 1.0.0 (06/30/2017): Initial release
