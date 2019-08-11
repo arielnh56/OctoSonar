@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE eagle SYSTEM "eagle.dtd">
-<eagle version="8.2.2">
+<eagle version="9.2.2">
 <drawing>
 <settings>
 <setting alwaysvectorfont="no"/>
+<setting keepoldvectorfont="yes"/>
 <setting verticaltext="up"/>
 </settings>
 <grid distance="0.1" unitdist="inch" unit="inch" style="lines" multiple="1" display="no" altdistance="0.01" altunitdist="inch" altunit="inch"/>
@@ -5975,14 +5976,35 @@ Silk outline shows header location.
 <plain>
 </plain>
 <instances>
-<instance part="J1" gate="G$1" x="5.08" y="71.12"/>
-<instance part="J0" gate="G$1" x="5.08" y="48.26"/>
-<instance part="J2" gate="G$1" x="5.08" y="25.4"/>
-<instance part="H1" gate="G$1" x="43.18" y="71.12" rot="MR0"/>
-<instance part="H0" gate="G$1" x="43.18" y="48.26" rot="MR0"/>
-<instance part="H2" gate="G$1" x="43.18" y="25.4" rot="MR0"/>
-<instance part="J3" gate="G$1" x="15.24" y="93.98" rot="R270"/>
-<instance part="LOGO1" gate="G$1" x="-27.94" y="68.58"/>
+<instance part="J1" gate="G$1" x="5.08" y="71.12" smashed="yes">
+<attribute name="VALUE" x="0" y="63.754" size="1.778" layer="96" font="vector"/>
+<attribute name="NAME" x="0" y="79.248" size="1.778" layer="95" font="vector"/>
+</instance>
+<instance part="J0" gate="G$1" x="5.08" y="48.26" smashed="yes">
+<attribute name="VALUE" x="0" y="40.894" size="1.778" layer="96" font="vector"/>
+<attribute name="NAME" x="0" y="56.388" size="1.778" layer="95" font="vector"/>
+</instance>
+<instance part="J2" gate="G$1" x="5.08" y="25.4" smashed="yes">
+<attribute name="VALUE" x="0" y="18.034" size="1.778" layer="96" font="vector"/>
+<attribute name="NAME" x="0" y="33.528" size="1.778" layer="95" font="vector"/>
+</instance>
+<instance part="H1" gate="G$1" x="43.18" y="71.12" smashed="yes" rot="MR0">
+<attribute name="VALUE" x="48.26" y="63.754" size="1.778" layer="96" font="vector" rot="MR0"/>
+<attribute name="NAME" x="48.26" y="79.248" size="1.778" layer="95" font="vector" rot="MR0"/>
+</instance>
+<instance part="H0" gate="G$1" x="43.18" y="48.26" smashed="yes" rot="MR0">
+<attribute name="VALUE" x="48.26" y="40.894" size="1.778" layer="96" font="vector" rot="MR0"/>
+<attribute name="NAME" x="48.26" y="56.388" size="1.778" layer="95" font="vector" rot="MR0"/>
+</instance>
+<instance part="H2" gate="G$1" x="43.18" y="25.4" smashed="yes" rot="MR0">
+<attribute name="VALUE" x="48.26" y="18.034" size="1.778" layer="96" font="vector" rot="MR0"/>
+<attribute name="NAME" x="48.26" y="33.528" size="1.778" layer="95" font="vector" rot="MR0"/>
+</instance>
+<instance part="J3" gate="G$1" x="15.24" y="93.98" smashed="yes" rot="R270">
+<attribute name="VALUE" x="10.414" y="96.52" size="1.778" layer="96" font="vector" rot="R270"/>
+<attribute name="NAME" x="20.828" y="96.52" size="1.778" layer="95" font="vector" rot="R270"/>
+</instance>
+<instance part="LOGO1" gate="G$1" x="-27.94" y="68.58" smashed="yes"/>
 </instances>
 <busses>
 </busses>
@@ -6079,13 +6101,7 @@ Silk outline shows header location.
 </sheet>
 </sheets>
 <errors>
-<approved hash="113,1,6.94267,73.7277,J2,,,,,"/>
-<approved hash="113,1,6.94267,50.8677,J1,,,,,"/>
-<approved hash="113,1,6.94267,28.0077,J3,,,,,"/>
-<approved hash="113,1,41.3173,73.7277,H2,,,,,"/>
-<approved hash="113,1,41.3173,50.8677,H1,,,,,"/>
-<approved hash="113,1,41.3173,28.0077,H3,,,,,"/>
-<approved hash="113,1,17.8477,89.5773,J4,,,,,"/>
+<approved hash="113,1,17.8173,89.5773,J3,,,,,"/>
 </errors>
 </schematic>
 </drawing>
