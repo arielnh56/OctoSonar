@@ -8,12 +8,12 @@
 #include <Wire.h>
 
 #define JIGADDR_T 0x21
-#define JIGADDR_E 0x21
+#define JIGADDR_E 0x22
 #define OCTO_ADDR 0x20
 #define GREEN_LED 5
 #define RED_LED 6
 #define INT_PIN 7
-#define DEBUG_PIN A7
+#define DEBUG_PIN 8
 #define debug(thing) if (digitalRead(DEBUG_PIN) == LOW) {Serial.print(thing);}
 #define debugln(thing) if (digitalRead(DEBUG_PIN) == LOW) {Serial.println(thing); delay(50);}
 #define debugln2(thing,format) if (digitalRead(DEBUG_PIN) == LOW) {Serial.println(thing, format); delay(50);}
@@ -23,7 +23,7 @@
 
 void setup() {
   uint8_t i;
-  Serial.begin(9600);
+  Serial.begin(57600);
   Wire.begin();
 
   pinMode(GREEN_LED, OUTPUT);
@@ -97,7 +97,7 @@ void loop() {
   byte error = 1;
   // keep last status 5s before start again
   delay(5000);
-  digitalWrite(GREEN_LED, ON);
+  digitalWrite(GREEN_LED, OFF);
   digitalWrite(RED_LED, OFF);
   Serial.println("Looking for OctoSonar");
   while (error != 0) {
@@ -130,8 +130,8 @@ void loop() {
     return;
 
   }
-  retVal = Wire.read() << 8;
   retVal += Wire.read();
+  retVal += (Wire.read() << 8);
 
   if (retVal != 0xffff) {
     Serial.print("Error T_READ ");
@@ -156,22 +156,28 @@ void loop() {
 
   for (byte port = 0; port <= 0xf; port++) {
     uint16_t portByte = ~(1 << port);
-    //  debug("Checking port ");
-    //  debugln(port);
-    //  debug("portByte ");
-    //  debugln2(portByte, HEX);
-    // set all echos high
+    uint16_t echoByte = 0xffff;
+    debug("Checking port ");
+    debugln(port);
+    debug("portByte ");
+    debugln2(portByte, HEX);
     // set all echos high
     Wire.beginTransmission(JIGADDR_E);
-    Wire.write(0xff);
-    Wire.write(0xff);
+    Wire.write((uint8_t)(echoByte & 0xff));
+    Wire.write((uint8_t)((echoByte >> 8) & 0xff));
     error = Wire.endTransmission(true);
+    if ( error ) {
+      Serial.print("Failed to write to jig E  = ");
+      Serial.println(error);
+      digitalWrite(RED_LED, ON);
+      return;
+    }
 
     // enable the port
 
     Wire.beginTransmission(OCTO_ADDR);
-    Wire.write((uint8_t)((portByte >> 8) & 0xff));
     Wire.write((uint8_t)(portByte & 0xff));
+    Wire.write((uint8_t)((portByte >> 8) & 0xff));
     error = Wire.endTransmission(true);
     if ( error ) {
       Serial.print("Failed to write to OctoSonar error = ");
@@ -179,8 +185,8 @@ void loop() {
       digitalWrite(RED_LED, ON);
       return;
     }
-    //  debug("sent portByte ");
-    //  debugln2(portByte, HEX);
+    debug("sent portByte ");
+    debugln2(portByte, HEX);
     //read them back
     Wire.requestFrom(JIGADDR_T, 2);
     if (Wire.available() != 2) {
@@ -190,8 +196,10 @@ void loop() {
       return;
 
     }
-    retVal = Wire.read() << 8;
-    retVal += Wire.read();
+    retVal = Wire.read();
+    retVal += (Wire.read() << 8);
+    debug("trigs ");
+    debugln2(retVal, HEX);
 
     if (retVal != portByte) {
       Serial.print("Error 1 - I see trigs ");
@@ -199,56 +207,71 @@ void loop() {
       digitalWrite(RED_LED, ON);
       return;
     }
-    //    debug("trigs ");
-    //  debugln2(retVal, HEX);
 
     // check the pin val - should be high
-    if (digitalRead(INT_PIN) == LOW) {
+    while (digitalRead(INT_PIN) == LOW) {
       Serial.print("Error: INT is low when echo is high trig ");
-      Serial.println(port, HEX);
-     Serial.println(LOW);
-     Serial.println(HIGH);
-     Serial.println(INT_PIN);
-     Serial.println(digitalRead(INT_PIN));
+      Serial.println(portByte, HEX);
+      Serial.print("echo ");
+      Serial.println(echoByte, HEX);
+      Serial.println(digitalRead(INT_PIN));
       digitalWrite(RED_LED, ON);
-      return;
+      //return;
     }
     //    debugln("High gives high");
 
     // drop the other echoes - should have no effect
+    echoByte = 0xffff;
     for (i = 0; i <= 0xf; i++) {
       if (i == port) continue; // skip self
-      //      digitalWrite(echoPin[i], LOW);
-      //read them back
-      Wire.requestFrom(JIGADDR_T, 1);
-      retVal = Wire.read();
+      echoByte &= ~(1 << i);
+      Wire.beginTransmission(JIGADDR_E);
+      Wire.write((uint8_t)(echoByte & 0xff));
+      Wire.write((uint8_t)((echoByte >> 8) & 0xff));
       error = Wire.endTransmission(true);
       if ( error ) {
-        Serial.print("Failed to read from jig error = ");
+        Serial.print("Failed to write to JIG E error 3 = ");
         Serial.println(error);
-        digitalWrite(RED_LED, HIGH);
+        digitalWrite(RED_LED, ON);
+        return;
+      }
+
+      //read trigs - should not have changed
+      Wire.requestFrom(JIGADDR_T, 2);
+      retVal = Wire.read();
+      retVal += (Wire.read() << 8);
+      error = Wire.endTransmission(true);
+      if ( error ) {
+        Serial.print("Failed to read from jig error 3 = ");
+        Serial.println(error);
+        digitalWrite(RED_LED, ON);
         return;
       }
       if (retVal != portByte) {
         Serial.print("Error 3 - I see trigs ");
-        Serial.println(retVal, HEX);
-        digitalWrite(RED_LED, HIGH);
+        Serial.print(retVal, HEX);
+        Serial.print(" wanted ");
+        Serial.println(portByte, HEX);
+        digitalWrite(RED_LED, ON);
         return;
       }
       if (digitalRead(INT_PIN) == LOW) {
         Serial.print("Error: INT goes low with pin ");
         Serial.println(i);
-        Wire.requestFrom(JIGADDR_T, 1);
-        Serial.println(Wire.read(), HEX);
+        Wire.requestFrom(JIGADDR_T, 2);
+        retVal = Wire.read();
+        retVal += (Wire.read() << 8);
+        error = Wire.endTransmission(true);
+        Serial.println(retVal, HEX);
         error = Wire.endTransmission(true);
         if ( error ) {
           Serial.print("Failed to read from jig error = ");
           Serial.println(error);
-          digitalWrite(RED_LED, HIGH);
+          digitalWrite(RED_LED, ON);
           return;
         }
 
-        digitalWrite(RED_LED, HIGH);
+        digitalWrite(RED_LED, ON);
         return;
       }
       //     debug("INT ok with low pin ");
@@ -257,19 +280,40 @@ void loop() {
     //   debugln("No interference from other echoes");
 
     // drop self
-    //    digitalWrite(echoPin[port], LOW);
-    if (digitalRead(INT_PIN) == HIGH) {
+    echoByte &= ~(1 << port);
+    Wire.beginTransmission(JIGADDR_E);
+    Wire.write((uint8_t)(echoByte & 0xff));
+    Wire.write((uint8_t)((echoByte >> 8) & 0xff));
+    error = Wire.endTransmission(true);
+    while (digitalRead(INT_PIN) == HIGH) {
       Serial.println("Error: INT is high when echo is low");
-      digitalWrite(RED_LED, HIGH);
-      return;
+      Serial.print("echo ");
+      Serial.println(echoByte, HEX);
+      Serial.print("port ");
+      Serial.println(portByte, HEX);
+        Wire.requestFrom(JIGADDR_T, 2);
+        retVal = Wire.read();
+        retVal = Wire.read() << 8;
+        error = Wire.endTransmission(true);
+        Serial.print("I see trigs ");
+        Serial.println(retVal, HEX);
+        error = Wire.endTransmission(true);
+        if ( error ) {
+          Serial.print("Failed to read from jig error = ");
+          Serial.println(error);
+          digitalWrite(RED_LED, ON);
+          return;
+        }
+      digitalWrite(RED_LED, ON);
+      // return;
     }
-    //   debugln("Low gives low");
+    debugln("Low gives low");
   }
 
   // if we got here, we passed
   Serial.println("PASS");
-  digitalWrite(GREEN_LED, HIGH);
-  digitalWrite(RED_LED, LOW);
+  digitalWrite(GREEN_LED, ON);
+  digitalWrite(RED_LED, OFF);
 }
 
 
