@@ -2,7 +2,7 @@
 Version: 1.2.0<br>
 Release date: 1/14/2018<br>
 https://hackaday.io/project/19950-hc-sr04-i2c-octopus-octosonar
-https://www.tindie.com/stores/arielnh56/
+https://redhunterstore.etsy.com/listing/1151819630/octosonar-connect-8-x-hc-sr04-to-arduino
 
 ## Summary
 
@@ -24,7 +24,7 @@ activity may interfere with the accuracy and reliability of this code.
 
 This code supports the OctoSonar v2.0 and later and OctoSonarX2. Schematics and board designs are included in this repo.
 
-Boards and sensors can be purchased at [on Tindie.](https://www.tindie.com/stores/arielnh56/)
+Boards and sensors can be purchased at [on Etsy.](https://redhunterstore.etsy.com)
 
 The board should be connected to your controller as follows:
 
